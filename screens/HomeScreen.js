@@ -12,32 +12,36 @@ import {
   Right
 } from 'native-base';
 
+import { db } from '../config/db';
+
+let itemsRef = db.ref('/items');
+
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      items: []
+    }
+  }
+
+  componentDidMount() {
+    itemsRef.on('value', (snapshot) => {
+      let data = snapshot.val();
+      let itemsKeys = Object.keys(data);
+      let items = itemsKeys.map((key) => {
+        data[key].id = key
+        key = data[key]
+        return key
+      });
+      this.setState({items});
+    })
+  }
+
   render() {
-    const goalsList = [
-      {
-        id: 0,
-        name: 'Sleep',
-        createdAt: '1:20 pm',
-        description: 'Sleep tight and dream well...',
-      },
-      {
-        id: 1,
-        name: 'Eat',
-        createdAt: '3:43 pm',
-        description: 'Eat well and get fat...',
-      },
-      {
-        id: 2,
-        name: 'Drink booz',
-        createdAt: '3:43 pm',
-        description: 'Omg u guna git drunk...',
-      },
-    ];
     return (
       <Container>
         <Content>
@@ -55,7 +59,7 @@ export default class HomeScreen extends React.Component {
               </Body>
             </ListItem>
 
-            {goalsList.map((data, indx) =>
+            {this.state.items.map((data, indx) =>
               <ListItem avatar key={indx} onPress={() => {
                 this.props.navigation.navigate('Edit', {
                   itemId: data.id,
@@ -66,7 +70,7 @@ export default class HomeScreen extends React.Component {
                   <Text>{data.description}</Text>
                 </Body>
                 <Right>
-                  <Text note>{data.createdAt}</Text>
+                  <Text note>createdAt</Text>
                 </Right>
               </ListItem>
             )}
